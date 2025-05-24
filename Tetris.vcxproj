@@ -153,7 +153,23 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="EntityComponentManager.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="src\AudioComponent.cpp" />
+    <ClCompile Include="src\GameEntity.cpp" />
+    <ClCompile Include="src\SpriteComponent.cpp" />
+    <ClCompile Include="src\TetrisApp.cpp" />
+    <ClCompile Include="src\TextComponent.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\AudioComponent.h" />
+    <ClInclude Include="include\EntityComponentManager.h" />
+    <ClInclude Include="include\GameEntity.h" />
+    <ClInclude Include="include\IComponent.h" />
+    <ClInclude Include="include\IRenderableComponent.h" />
+    <ClInclude Include="include\SpriteComponent.h" />
+    <ClInclude Include="include\TetrisApp.h" />
+    <ClInclude Include="include\TextComponent.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

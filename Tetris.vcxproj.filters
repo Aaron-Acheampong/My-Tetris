@@ -33,7 +33,7 @@
     <ClCompile Include="src\AudioComponent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="EntityComponentManager.cpp">
+    <ClCompile Include="src\EntityComponentManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

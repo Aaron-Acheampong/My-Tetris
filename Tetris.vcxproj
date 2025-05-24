@@ -153,9 +153,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="EntityComponentManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="src\AudioComponent.cpp" />
+    <ClCompile Include="src\EntityComponentManager.cpp" />
     <ClCompile Include="src\GameEntity.cpp" />
     <ClCompile Include="src\SpriteComponent.cpp" />
     <ClCompile Include="src\TetrisApp.cpp" />

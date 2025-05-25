@@ -13,8 +13,11 @@
 constexpr auto M = 20;
 constexpr auto N = 10;
 
+int scoreboard = 0;
+
 TetrisApp* app;
-TextComponent* txt;
+TextComponent* title;
+TextComponent* score;
 AudioComponent* gamemusic;
 AudioComponent* brickfall;
 AudioComponent* brickbreak;
@@ -64,7 +67,7 @@ void checkandbreak()
 			field[k][j] = field[i][j];
 		}
 		if (count < N) { k--; }
-		else { brickbreak->PlaySound(); }
+		else { brickbreak->PlaySound(); score->SetText("SCORE: " + std::to_string(++scoreboard)); }
 	}
 
 }
@@ -215,11 +218,16 @@ void HandleRendering()
 		tile->Render(*app->GetRenderWindow());
 	}
 
+	
+	title->Render(*app->GetRenderWindow());
+	score->Render(*app->GetRenderWindow());
 	frame->Render(*app->GetRenderWindow());
 
 	app->GetRenderWindow()->display();
-	
+
 }
+
+
 
 int main()
 {
@@ -229,8 +237,11 @@ int main()
 	app = new TetrisApp(sf::VideoMode(320, 480), "Tetris Game!!!!");
 
 
-	txt = new TextComponent("./assets/fonts/8bitOperatorPlus8-Regular.ttf");
-	txt->setPosition(40.0f, 10.0f);
+	title = new TextComponent("./assets/fonts/8bitOperatorPlus8-Regular.ttf", "Tetris Game");
+	title->setPosition(60.0f, 0.0f);
+
+	score = new TextComponent("./assets/fonts/8bitOperatorPlus8-Regular.ttf", "SCORE: " + std::to_string(0));
+	score->setPosition(220.0f, 40.0f);
 
 	//AudioComponent* audio;
 
@@ -249,7 +260,7 @@ int main()
 	gamemusic = new AudioComponent("assets/audio/Tetris_music.ogg", true, 25.0f, 1.2f);
 	brickbreak = new AudioComponent("assets/audio/brick_breaking.ogg", false, 100.0f, 1.2f);
 	brickfall = new AudioComponent("assets/audio/brick_falling.ogg", true, 100.0f, 1.2f);
-	brickfall->SetAudioOffset(1000.0f);
+	brickfall->SetAudioOffset(100.0f);
 	shapechange = new AudioComponent("assets/audio/shape_change.ogg", false, 100.0f, 1.2f);
 
 
@@ -270,7 +281,8 @@ int main()
 
 	// Clean Up Application resources
 	delete app;
-	delete txt;
+	delete title;
+	delete score;
 	delete brickfall;
 	delete brickbreak;
 	delete shapechange;

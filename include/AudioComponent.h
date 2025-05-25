@@ -5,11 +5,18 @@
 class AudioComponent : public IComponent
 {
 public:
-	AudioComponent(const char* filepath);
+	AudioComponent(std::string filepath, bool setloop, float volume, float pitch);
 
 	~AudioComponent();
 
-	virtual void PlaySound();
-	virtual void StopSound();
+	void PlaySound();
+	void PauseSound();
+	void StopSound();
+	void SetAudioOffset(float offset);
+
+	void Update();
+
+private:
+	sf::Music music;
 };
 

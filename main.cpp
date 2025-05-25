@@ -8,16 +8,23 @@
 #include "TextComponent.h"
 #include "GameEntity.h"
 #include "EntityComponentManager.h"
+#include "AudioComponent.h"
 
 constexpr auto M = 20;
 constexpr auto N = 10;
 
 TetrisApp* app;
+TextComponent* txt;
+AudioComponent* gamemusic;
+AudioComponent* brickfall;
+AudioComponent* brickbreak;
+AudioComponent* shapechange;
 
 std::shared_ptr<GameEntity> tile;
 std::shared_ptr<GameEntity> background;
 std::shared_ptr<GameEntity> frame;
 
+// to keep track off occupied spaces for breaking
 int field[M][N] = { 0 };
 
 struct Point
@@ -42,9 +49,25 @@ int direction = 0;
 bool rotate = 0;
 int colorNum = 1;
 
-float timer = 0, delay = 0.3;
+float timer = 0, delay = 0.3, sounddelay = 1.0f;
 
 
+void checkandbreak()
+{
+	int k = M - 1;
+	for (int i = M - 1; i > 0; i--)
+	{
+		int count = 0;
+		for (int j = 0; j < N; j++)
+		{
+			if (field[i][j]) count++;
+			field[k][j] = field[i][j];
+		}
+		if (count < N) { k--; }
+		else { brickbreak->PlaySound(); }
+	}
+
+}
 
 bool check()
 {
@@ -54,6 +77,65 @@ bool check()
 
 	return 1;
 };
+
+void moveleftright()
+{
+	for (int i = 0; i < 4; i++) { b[i] = a[i]; a[i].x += direction; }
+	if (!check()) for (int i = 0; i < 4; i++) a[i] = b[i];
+}
+
+void rotatebrick()
+{
+	if (rotate)
+	{
+		shapechange->PlaySound();
+		Point p = a[1]; //center of rotation
+		for (int i = 0; i < 4; i++)
+		{
+			int x = a[i].y - p.y;
+			int y = a[i].x - p.x;
+			a[i].x = p.x - x;
+			a[i].y = p.y + y;
+		}
+		if (!check()) for (int i = 0; i < 4; i++) a[i] = b[i];
+	}
+}
+
+void fallingmotion()
+{
+	
+	if (timer > delay)
+	{
+		 
+		for (int i = 0; i < 4; i++) { b[i] = a[i]; a[i].y += 1; }
+		brickfall->PlaySound();
+
+		if (!check())
+		{
+			
+			for (int i = 0; i < 4; i++) field[b[i].y][b[i].x] = colorNum;
+
+			colorNum = 1 + rand() % 7;
+			int n = rand() % 7;
+			for (int i = 0; i < 4; i++)
+			{
+				a[i].x = figures[n][i] % 2;
+				a[i].y = figures[n][i] / 2;
+			}
+		}
+
+		timer = 0;
+
+		
+		brickbreak->StopSound();
+		shapechange->StopSound();
+		//brickfall->StopSound();
+
+	}
+	
+}
+
+
 
 void HandleEvents()
 {
@@ -68,7 +150,7 @@ void HandleEvents()
 
 
 		if (e.type == sf::Event::KeyPressed)
-			if (e.key.code == sf::Keyboard::Up) rotate = true;
+			if (e.key.code == sf::Keyboard::Up) { rotate = true; }
 			else if (e.key.code == sf::Keyboard::Left) direction = -1;
 			else if (e.key.code == sf::Keyboard::Right) direction = 1;
 	}
@@ -79,60 +161,20 @@ void HandleEvents()
 
 void HandleUpdate()
 {
+	
 	//// <- Move -> ///
-	for (int i = 0; i < 4; i++) { b[i] = a[i]; a[i].x += direction; }
-	if (!check()) for (int i = 0; i < 4; i++) a[i] = b[i];
+	moveleftright();
 
 	//////Rotate//////
-	if (rotate)
-	{
-		Point p = a[1]; //center of rotation
-		for (int i = 0; i < 4; i++)
-		{
-			int x = a[i].y - p.y;
-			int y = a[i].x - p.x;
-			a[i].x = p.x - x;
-			a[i].y = p.y + y;
-		}
-		if (!check()) for (int i = 0; i < 4; i++) a[i] = b[i];
-
-	}
+	rotatebrick();
 
 	///////Tick////////
-	if (timer > delay)
-	{
-		for (int i = 0; i < 4; i++) { b[i] = a[i]; a[i].y += 1; }
-
-		if (!check())
-		{
-			for (int i = 0; i < 4; i++) field[b[i].y][b[i].x] = colorNum;
-
-			colorNum = 1 + rand() % 7;
-			int n = rand() % 7;
-			for (int i = 0; i < 4; i++)
-			{
-				a[i].x = figures[n][i] % 2;
-				a[i].y = figures[n][i] / 2;
-			}
-		}
-
-		timer = 0;
-	}
+	fallingmotion();
 
 	///////check lines//////////
-	int k = M - 1;
-	for (int i = M - 1; i > 0; i--)
-	{
-		int count = 0;
-		for (int j = 0; j < N; j++)
-		{
-			if (field[i][j]) count++;
-			field[k][j] = field[i][j];
-		}
-		if (count < N) k--;
-	}
-
-
+	checkandbreak();
+	
+	
 
 	direction = 0;
 	rotate = 0;
@@ -176,6 +218,7 @@ void HandleRendering()
 	frame->Render(*app->GetRenderWindow());
 
 	app->GetRenderWindow()->display();
+	
 }
 
 int main()
@@ -186,8 +229,8 @@ int main()
 	app = new TetrisApp(sf::VideoMode(320, 480), "Tetris Game!!!!");
 
 
-	//TextComponent* txt = new TextComponent("./assets/fonts/8bitOperatorPlus8-Regular.ttf");
-	//txt->setPosition()
+	txt = new TextComponent("./assets/fonts/8bitOperatorPlus8-Regular.ttf");
+	txt->setPosition(40.0f, 10.0f);
 
 	//AudioComponent* audio;
 
@@ -203,7 +246,11 @@ int main()
 
 
 	// Setup our sounds
-
+	gamemusic = new AudioComponent("assets/audio/Tetris_music.ogg", true, 25.0f, 1.2f);
+	brickbreak = new AudioComponent("assets/audio/brick_breaking.ogg", false, 100.0f, 1.2f);
+	brickfall = new AudioComponent("assets/audio/brick_falling.ogg", true, 100.0f, 1.2f);
+	brickfall->SetAudioOffset(1000.0f);
+	shapechange = new AudioComponent("assets/audio/shape_change.ogg", false, 100.0f, 1.2f);
 
 
 
@@ -212,15 +259,22 @@ int main()
 	app->SetUpdateCallback(HandleUpdate);
 	app->SetRenderCallback(HandleRendering);
 
+
+	// Game Looooooop
+	gamemusic->PlaySound();
 	app->RunLoop();
+	gamemusic->StopSound();
 
 
 
 
 	// Clean Up Application resources
 	delete app;
-	// delete txt;
-	// delete audio;
+	delete txt;
+	delete brickfall;
+	delete brickbreak;
+	delete shapechange;
+	delete gamemusic;
 
 	return EXIT_SUCCESS;
 }
